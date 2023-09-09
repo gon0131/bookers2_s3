@@ -10,7 +10,10 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find(params[:id])
-    @books = @user.books
+    @books = @user.books.left_joins(:favorites)
+             .select('books.*, COUNT(favorites.id) AS favorite_count')
+             .group('books.id')
+             .order('favorite_count DESC')
     @book = Book.new
   end
 

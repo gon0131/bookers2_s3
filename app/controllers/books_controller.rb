@@ -5,8 +5,14 @@ class BooksController < ApplicationController
   def index
     @user = current_user
     @book = Book.new
-    # @books = Book.all.order(id: "DESC")
-    @books = Book.all
+    # 前提:モデルクラスは単数 それに対応するデータベーステーブルは複数形の命名規則
+    # 1. left_joinでbookテーブルをベースに外部結合 いいねがnullでも結合
+    # 2. selectで全てのカラムの中のfavoritesテーブルのidの数をカウント 結果をfavorite_countという名前で保存
+    # 3. booksテーブルのidでグルーピング いいね複数回されている場合、同じ本が何個も出てくるからこれをしないと一意に定まらない
+    @books = Book.left_joins(:favorites)
+             .select('books.*, COUNT(favorites.id) AS favorite_count')
+             .group('books.id')
+             .order('favorite_count DESC')
   end
 
   def show
